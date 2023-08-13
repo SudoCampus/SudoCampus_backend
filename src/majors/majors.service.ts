@@ -4,6 +4,7 @@ import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { CreateMajorDto } from './dto/create-major.dto';
 import { UpdateMajorDto } from './dto/update-major.dto';
 import { Major } from './entities/major.entity';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 @Injectable()
 export class MajorsService {
@@ -12,17 +13,37 @@ export class MajorsService {
     private majorRepository: Repository<Major>,
   ) {}
 
-  create(createMajorDto: CreateMajorDto) {
+  async create(createMajorDto: CreateMajorDto): Promise<Major> {
     const major: Major = this.majorRepository.create(createMajorDto);
-    return this.majorRepository.save(major);
+    try {
+      return await this.majorRepository.save(major);
+    } catch (error) {
+      if (error.name == 'QueryFailedError') {
+        throw new BadRequestException(`
+          삽입 정보가 유효하지 않습니다.
+          학부(${createMajorDto.departmentName})가 존재하지 않습니다.
+        `);
+      } else {
+        throw error;
+      }
+    }
   }
 
-  findAll(): Promise<Major[]> {
-    return this.majorRepository.find();
+  findAll(departmentName?: string): Promise<Major[]> {
+    return departmentName
+      ? this.majorRepository.find({ where: { departmentName } })
+      : this.majorRepository.find();
   }
 
   findOne(majorName: string): Promise<Major> {
-    return this.majorRepository.findOne({ where: { majorName } });
+    const major = this.majorRepository.findOne({ where: { majorName } });
+    if (!major) {
+      throw new NotFoundException(`
+        조회 정보가 유효하지 않습니다.
+        학과(${majorName})가 존재하지 않습니다.
+      `);
+    }
+    return major;
   }
 
   update(

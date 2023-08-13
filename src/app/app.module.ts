@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { MajorsModule } from '../majors/majors.module';
-import { Major } from '../majors/entities/major.entity';
+import { DepartmentsModule } from 'src/departments/departments.module';
 
 @Module({
   imports: [
@@ -20,6 +20,7 @@ import { Major } from '../majors/entities/major.entity';
       autoLoadEntities: true,
     }),
     MajorsModule,
+    DepartmentsModule,
   ],
   controllers: [],
   providers: [],

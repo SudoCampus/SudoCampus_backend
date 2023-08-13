@@ -6,7 +6,7 @@ import {
   Patch,
   Param,
   Delete,
-  Injectable,
+  Query,
 } from '@nestjs/common';
 import { MajorsService } from './majors.service';
 import { CreateMajorDto } from './dto/create-major.dto';
@@ -22,8 +22,8 @@ export class MajorsController {
   }
 
   @Get()
-  findAll() {
-    return this.majorsService.findAll();
+  findAll(@Query('departmentName') departmentName: string) {
+    return this.majorsService.findAll(departmentName);
   }
 
   @Get(':majorName')

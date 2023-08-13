@@ -1,18 +1,43 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MajorsService } from './majors.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { getRepositoryToken } from '@nestjs/typeorm';
 import { Major } from './entities/major.entity';
+import { Repository } from 'typeorm';
+import { CreateMajorDto } from './dto/create-major.dto';
+import { UpdateMajorDto } from './dto/update-major.dto';
+
+const mockMajorRepository = () => ({
+  find: jest.fn(),
+  findOne: jest.fn(),
+  create: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+  save: jest.fn(),
+  remove: jest.fn(),
+});
+
+type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
 describe('MajorsService', () => {
   let service: MajorsService;
+  let MajorsRepository: MockRepository<Major>;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [MajorsService],
+      imports: [],
+      providers: [
+        MajorsService,
+        {
+          provide: getRepositoryToken(Major),
+          useValue: mockMajorRepository(),
+        },
+      ],
     }).compile();
 
     service = module.get<MajorsService>(MajorsService);
+    MajorsRepository = module.get<MockRepository<Major>>(
+      getRepositoryToken(Major),
+    );
   });
 
   it('should be defined', () => {
@@ -21,19 +46,22 @@ describe('MajorsService', () => {
 
   describe('findAll()', () => {
     it('should return an array of majors', async () => {
-      expect(service.findAll()).toBeInstanceOf(Array);
+      MajorsRepository.find.mockResolvedValue(ITEMS); //find 메소드를 사용하면 ITEMS를 반환하도록 설정
+      const result = await service.findAll();
+      expect(result).toEqual(ITEMS);
     });
   });
 
   describe('findOne()', () => {
-    service.create({ majorName: 'test' });
     it('should return a major', async () => {
-      expect(service.findOne('test')).toBeDefined();
+      MajorsRepository.findOne.mockResolvedValue(ITEMS[0]); //findOne 메소드를 사용하면 ITEMS[0]을 반환하도록 설정
+      const result = await service.findOne('기계공학과');
+      expect(result).toEqual(ITEMS[0]);
     });
-    service.remove('test');
     it('should return 404', async () => {
+      MajorsRepository.findOne.mockResolvedValue(undefined);
       try {
-        expect(service.findOne('test'));
+        await service.findOne('기계공학과');
       } catch (e) {
         expect(e.status).toBe(404);
       }
@@ -41,40 +69,40 @@ describe('MajorsService', () => {
   });
 
   describe('create()', () => {
+    const createMajorDto: CreateMajorDto = {
+      majorName: '기계공학과',
+    };
     it('should create a major', async () => {
-      const beforeCreate: number = await service
-        .findAll()
-        .then((majors) => majors.length);
-      expect(service.create({ majorName: 'test' })).toBeDefined();
-      const afterCreate: number = await service
-        .findAll()
-        .then((majors) => majors.length);
-      expect(afterCreate).toBe(beforeCreate + 1);
-      service.remove('test');
-    });
-  });
+      MajorsRepository.save.mockResolvedValue(createMajorDto); //성공할꺼라 가정.
+      const result = await service.create(createMajorDto);
 
-  describe('update()', () => {
-    it('should update a major', async () => {
-      service.create({ majorName: 'test' });
-      expect(
-        service.update('test', { majorName: 'test2' }),
-      ).resolves.toBeDefined();
-      service.remove('test2');
+      expect(MajorsRepository.create).toHaveBeenCalledTimes(1); // create가 1번 불러졌니?
+      expect(MajorsRepository.create).toHaveBeenCalledWith(createMajorDto); // 매개변수로 createArgs가 주어졌니?
+      expect(result).toEqual(createMajorDto); // 반환값이 createArgs와 같니?
     });
-  });
 
-  describe('remove()', () => {
-    it('should remove a major', async () => {
-      service.create({ majorName: 'test' });
-      const beforeRemove: number = await service
-        .findAll()
-        .then((majors) => majors.length);
-      expect(service.remove('test')).resolves.toBeDefined();
-      const afterRemove: number = await service
-        .findAll()
-        .then((majors) => majors.length);
-      expect(afterRemove).toBe(beforeRemove - 1);
+    it('should fail on exception', async () => {
+      MajorsRepository.save.mockRejectedValue('save Error'); //실패할꺼라 가정.
+      try {
+        await service.create(createMajorDto);
+      } catch (e) {
+        expect(e).toEqual('save Error');
+      }
     });
   });
 });
+
+const ITEMS: Major[] = [
+  {
+    majorName: '기계공학과',
+    departmentName: '공과대학',
+    insertDay: new Date(),
+    modifyDay: new Date(),
+  },
+  {
+    majorName: '전자공학과',
+    departmentName: '공과대학',
+    insertDay: new Date(),
+    modifyDay: new Date(),
+  },
+];

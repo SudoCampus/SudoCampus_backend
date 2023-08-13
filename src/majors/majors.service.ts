@@ -4,7 +4,12 @@ import { Repository, UpdateResult, DeleteResult } from 'typeorm';
 import { CreateMajorDto } from './dto/create-major.dto';
 import { UpdateMajorDto } from './dto/update-major.dto';
 import { Major } from './entities/major.entity';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  ReadExceptionHandler,
+  CreateExceptionHandler,
+  UpdateExceptionHandler,
+  DeleteExceptionHandler,
+} from 'src/utils/exceptionHandler';
 
 @Injectable()
 export class MajorsService {
@@ -13,47 +18,85 @@ export class MajorsService {
     private majorRepository: Repository<Major>,
   ) {}
 
+  private MAJOR: string = '학과';
+  private DEPARTMENT: string = '학부';
+  private INVALID_FOREIGN_KEY_CODE: number = 1452;
+
   async create(createMajorDto: CreateMajorDto): Promise<Major> {
+    const isMajorExist = await this.getMajor(createMajorDto.majorName);
+    if (isMajorExist) {
+      CreateExceptionHandler.throwDuplicatedPrimaryKeyException(
+        this.MAJOR,
+        createMajorDto.majorName,
+      );
+    }
     const major: Major = this.majorRepository.create(createMajorDto);
     try {
       return await this.majorRepository.save(major);
     } catch (error) {
-      if (error.name == 'QueryFailedError') {
-        throw new BadRequestException(`
-          삽입 정보가 유효하지 않습니다.
-          학부(${createMajorDto.departmentName})가 존재하지 않습니다.
-        `);
+      if (error.errno === this.INVALID_FOREIGN_KEY_CODE) {
+        CreateExceptionHandler.throwInvalidForeignKeyException(
+          this.DEPARTMENT,
+          createMajorDto.departmentName,
+        );
       } else {
         throw error;
       }
     }
   }
 
-  findAll(departmentName?: string): Promise<Major[]> {
+  async findAll(departmentName?: string): Promise<Major[]> {
     return departmentName
-      ? this.majorRepository.find({ where: { departmentName } })
-      : this.majorRepository.find();
+      ? await this.majorRepository.find({ where: { departmentName } })
+      : await this.majorRepository.find();
   }
 
-  findOne(majorName: string): Promise<Major> {
-    const major = this.majorRepository.findOne({ where: { majorName } });
+  async findOne(majorName: string): Promise<Major> {
+    const major = await this.getMajor(majorName);
     if (!major) {
-      throw new NotFoundException(`
-        조회 정보가 유효하지 않습니다.
-        학과(${majorName})가 존재하지 않습니다.
-      `);
+      ReadExceptionHandler.throwNotFoundException(this.MAJOR, majorName);
     }
     return major;
   }
 
-  update(
+  async update(
     majorName: string,
     updateMajorDto: UpdateMajorDto,
   ): Promise<UpdateResult> {
-    return this.majorRepository.update({ majorName }, updateMajorDto);
+    try {
+      const isMajorExist = await this.getMajor(majorName);
+      if (!isMajorExist) {
+        UpdateExceptionHandler.throwNotFoundException(this.MAJOR, majorName);
+      }
+      return await this.majorRepository.update({ majorName }, updateMajorDto);
+    } catch (error) {
+      if (error.errno === this.INVALID_FOREIGN_KEY_CODE) {
+        UpdateExceptionHandler.throwInvalidForeignKeyException(
+          this.DEPARTMENT,
+          updateMajorDto.departmentName,
+        );
+      } else {
+        throw error;
+      }
+    }
   }
 
-  remove(majorName: string): Promise<DeleteResult> {
-    return this.majorRepository.delete({ majorName });
+  async remove(majorName: string): Promise<DeleteResult> {
+    const isMajorExist = await this.getMajor(majorName);
+    if (!isMajorExist) {
+      DeleteExceptionHandler.throwNotFoundException(this.MAJOR, majorName);
+    }
+    try {
+      return await this.majorRepository.delete({ majorName });
+    } catch (error) {
+      DeleteExceptionHandler.throwConstraintByForeignKeyException(
+        this.MAJOR,
+        majorName,
+      );
+    }
+  }
+
+  async getMajor(majorName: string): Promise<Major> {
+    return await this.majorRepository.findOne({ where: { majorName } });
   }
 }

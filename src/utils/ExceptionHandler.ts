@@ -19,6 +19,15 @@ export class CreateExceptionHandler {
       `데이터가 참조하는 ${entityType}(${entityName})가 존재하지 않아 올바르게 데이터를 삽입할 수 없습니다.`,
     );
   }
+
+  public static throwDuplicatedPrimaryKeyException(
+    entityType: string,
+    entityName: string,
+  ): void {
+    throw new BadRequestException(
+      `${entityType}(${entityName})가 이미 존재하여 데이터를 삽입할 수 없습니다.`,
+    );
+  }
 }
 
 export class ReadExceptionHandler {

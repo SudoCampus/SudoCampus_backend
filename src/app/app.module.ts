@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { MajorsModule } from '../majors/majors.module';
+import { Major } from '../majors/entities/major.entity';
 
 @Module({
   imports: [

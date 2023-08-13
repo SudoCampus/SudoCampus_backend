@@ -40,7 +40,7 @@ export class MajorsService {
     }
     const major: Major = this.majorRepository.create(createMajorDto);
     try {
-      return SuccessHanlder.createSuccessResponse<Major>(
+      return SuccessHanlder.getCreateSuccessResponse<Major>(
         await this.majorRepository.save(major),
         this.MAJOR,
       );
@@ -57,7 +57,7 @@ export class MajorsService {
   }
 
   async findAll(departmentName?: string): Promise<ReadAllResponse<Major>> {
-    return SuccessHanlder.readAllSuccessResponse<Major>(
+    return SuccessHanlder.getReadAllSuccessResponse<Major>(
       departmentName
         ? await this.majorRepository.find({ where: { departmentName } })
         : await this.majorRepository.find(),
@@ -70,7 +70,7 @@ export class MajorsService {
     if (!major) {
       ReadExceptionHandler.throwNotFoundException(this.MAJOR, majorName);
     }
-    return SuccessHanlder.readOneSuccessResponse<Major>(major, this.MAJOR);
+    return SuccessHanlder.getReadOneSuccessResponse<Major>(major, this.MAJOR);
   }
 
   async update(
@@ -86,7 +86,10 @@ export class MajorsService {
         { majorName },
         updateMajorDto,
       );
-      return SuccessHanlder.updateSuccessResponse(result.affected, this.MAJOR);
+      return SuccessHanlder.getUpdateSuccessResponse(
+        result.affected,
+        this.MAJOR,
+      );
     } catch (error) {
       if (error.errno === this.INVALID_FOREIGN_KEY_CODE) {
         UpdateExceptionHandler.throwInvalidForeignKeyException(
@@ -106,7 +109,10 @@ export class MajorsService {
     }
     try {
       const result = await this.majorRepository.delete({ majorName });
-      return SuccessHanlder.deleteSuccessResponse(result.affected, this.MAJOR);
+      return SuccessHanlder.getDeleteSuccessResponse(
+        result.affected,
+        this.MAJOR,
+      );
     } catch (error) {
       DeleteExceptionHandler.throwConstraintByForeignKeyException(
         this.MAJOR,

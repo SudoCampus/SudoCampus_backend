@@ -1,5 +1,5 @@
 export default class SuccessHanlder {
-  public static createSuccessResponse<T>(
+  public static getCreateSuccessResponse<T>(
     entity: T,
     entityName: string,
   ): CreateResponse<T> {
@@ -10,7 +10,7 @@ export default class SuccessHanlder {
     };
   }
 
-  public static readAllSuccessResponse<T>(
+  public static getReadAllSuccessResponse<T>(
     entities: T[],
     entityName: string,
   ): ReadAllResponse<T> {
@@ -21,7 +21,7 @@ export default class SuccessHanlder {
     };
   }
 
-  public static readOneSuccessResponse<T>(
+  public static getReadOneSuccessResponse<T>(
     entity: T,
     entityName: string,
   ): ReadOneResponse<T> {
@@ -32,7 +32,7 @@ export default class SuccessHanlder {
     };
   }
 
-  public static updateSuccessResponse<T>(
+  public static getUpdateSuccessResponse<T>(
     affected: number,
     entityName: string,
   ): UpdateResponse<T> {
@@ -43,7 +43,7 @@ export default class SuccessHanlder {
     };
   }
 
-  public static deleteSuccessResponse<T>(
+  public static getDeleteSuccessResponse<T>(
     affected: number,
     entityName: string,
   ): DeleteResponse<T> {

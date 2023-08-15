@@ -1,3 +1,5 @@
+import { User } from '../users/entities/user.entity';
+
 export default class SuccessHanlder {
   public static getCreateSuccessResponse<T>(
     entity: T,
@@ -18,6 +20,23 @@ export default class SuccessHanlder {
       message: `${entityName} 조회에 성공하였습니다.`,
       data: entities,
       status: 'success',
+    };
+  }
+
+  public static getReadAllWithPaginationSuccessResponse<T>(
+    entities: T[],
+    entityName: string,
+    page: number,
+    per_page: number,
+    total_pages: number,
+  ): ReadAllWithPaginationResponse<T> {
+    return {
+      message: `${entityName} 조회에 성공하였습니다.`,
+      data: entities,
+      status: 'success',
+      page,
+      per_page,
+      total_pages,
     };
   }
 
@@ -53,6 +72,38 @@ export default class SuccessHanlder {
       status: 'success',
     };
   }
+
+  public static getLoginSuccessResponse(
+    userId: string,
+    user: User,
+    accessToken: string,
+  ): LoginResponse {
+    return {
+      message: `${userId}님, 로그인에 성공하였습니다.`,
+      data: user,
+      accessToken,
+      status: 'success',
+    };
+  }
+
+  public static getLogoutSuccessResponse(): LogoutResponse {
+    return {
+      message: `로그아웃에 성공하였습니다.`,
+      data: null,
+      status: 'success',
+    };
+  }
+
+  public static getVerifySuccessResponse(
+    userId: string,
+    user: User,
+  ): VerifyResponse {
+    return {
+      message: `${userId}님, 인증에 성공하였습니다.`,
+      data: user,
+      status: 'success',
+    };
+  }
 }
 
 export type CreateResponse<T> = {
@@ -65,6 +116,15 @@ export type ReadAllResponse<T> = {
   message: string;
   status: 'success';
   data: T[];
+};
+
+export type ReadAllWithPaginationResponse<T> = {
+  message: string;
+  status: 'success';
+  data: T[];
+  page: number;
+  per_page: number;
+  total_pages: number;
 };
 
 export type ReadOneResponse<T> = {
@@ -83,4 +143,23 @@ export type DeleteResponse<T> = {
   message: string;
   status: 'success';
   affected: number;
+};
+
+export type LoginResponse = {
+  message: string;
+  status: 'success';
+  data: User;
+  accessToken: string;
+};
+
+export type LogoutResponse = {
+  message: string;
+  status: 'success';
+  data: null;
+};
+
+export type VerifyResponse = {
+  message: string;
+  status: 'success';
+  data: User;
 };

@@ -1,11 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { CommonExceptionHandler } from 'src/utils/exceptionHandler';
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  handleRequest(err, payload, info) {
+  handleRequest(err, payload, info, context: ExecutionContext) {
     // JWT 유효성 검사 실패 시 예외를 발생시키는데, 여기서 예외 처리를 커스터마이즈할 수 있음
+    const request = context.switchToHttp().getRequest();
+    if (
+      (request.body?.studentNumber &&
+        payload.userId !== request.body.studentNumber) ||
+      (request.params?.studentNumber &&
+        payload.userId !== request.params.studentNumber)
+    ) {
+      if (payload.userId !== request.body.studentNumber) {
+        CommonExceptionHandler.throwForbiddenException(
+          '로그인한 사용자의 정보와 일치하지 않는 데이터를 편집 또는 열람할 수 없습니다.',
+        );
+      }
+    }
     if (err || !payload) {
       CommonExceptionHandler.throwForbiddenException(
         '로그인 되어있지 않거나 로그인 기간이 만료되었습니다.',

@@ -19,7 +19,6 @@ export class GetAllApplySecondMajors extends BaseQuery<
 
   sqlText = `
       SELECT 
-        a.STUDENT_NUMBER studentNumber,
         a.MAJOR_NAME majorTo,
         b.MAJOR_NAME majorFrom,
         a.APPLY_PERIOD applyPeriod,
@@ -83,7 +82,6 @@ export class GetApplySecondMajor extends BaseQuery<ApplySecondMajorResponseType 
   }
   sqlText = `
         SELECT 
-            a.STUDENT_NUMBER studentNumber,
             a.MAJOR_NAME majorTo,
             b.MAJOR_NAME majorFrom,
             a.APPLY_PERIOD applyPeriod,

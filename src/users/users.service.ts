@@ -115,13 +115,7 @@ export class UsersService {
     return SuccessHanlder.getReadOneSuccessResponse(user, this.USER);
   }
 
-  async update(studentNumber: number, updateUserDto: UpdateUserDto, req: any) {
-    const payload: Payload = req.user as Payload;
-    if (payload.studentNumber != studentNumber.toString()) {
-      CommonExceptionHandler.throwForbiddenException(
-        '로그인한 유저와 다른 유저를 삭제할 수 없습니다.',
-      );
-    }
+  async update(studentNumber: number, updateUserDto: UpdateUserDto) {
     const isUserExist = await this.findByStudentNumber(studentNumber);
     if (!isUserExist) {
       UpdateExceptionHandler.throwNotFoundException(
@@ -150,13 +144,7 @@ export class UsersService {
     }
   }
 
-  async remove(studentNumber: number, req: any) {
-    const payload: Payload = req.user as Payload;
-    if (payload.studentNumber != studentNumber.toString()) {
-      CommonExceptionHandler.throwForbiddenException(
-        '로그인한 유저와 다른 유저를 삭제할 수 없습니다.',
-      );
-    }
+  async remove(studentNumber: number) {
     const isUserExist = await this.findByStudentNumber(studentNumber);
     if (!isUserExist) {
       DeleteExceptionHandler.throwNotFoundException(

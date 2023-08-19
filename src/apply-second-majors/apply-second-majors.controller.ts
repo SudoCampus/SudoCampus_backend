@@ -11,6 +11,8 @@ import {
 import { ApplySecondMajorsService } from './apply-second-majors.service';
 import { CreateApplySecondMajorDto } from './dto/create-apply-second-major.dto';
 import { UpdateApplySecondMajorDto } from './dto/update-apply-second-ajor.dto';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
+import { UseGuards } from '@nestjs/common';
 
 @Controller('apply-second-majors')
 export class ApplySecondMajorsController {
@@ -18,6 +20,7 @@ export class ApplySecondMajorsController {
     private readonly applySecondMajorsService: ApplySecondMajorsService,
   ) {}
 
+  @UseGuards(JwtAuthGuard)
   @Post()
   create(@Body() createApplySecondMajorDto: CreateApplySecondMajorDto) {
     return this.applySecondMajorsService.create(createApplySecondMajorDto);
@@ -53,6 +56,7 @@ export class ApplySecondMajorsController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Patch(':studentNumber/:majorName/:applyPeriod')
   update(
     @Param('studentNumber') studentNumber: number,
@@ -68,6 +72,7 @@ export class ApplySecondMajorsController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @Delete(':studentNumber/:majorName/:applyPeriod')
   remove(
     @Param('studentNumber') studentNumber: number,

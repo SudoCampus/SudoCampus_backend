@@ -1,5 +1,4 @@
 export type ApplySecondMajorResponseType = {
-  studentNumber: number;
   majorFrom: string;
   majorTo: string;
   applyPeriod: string;

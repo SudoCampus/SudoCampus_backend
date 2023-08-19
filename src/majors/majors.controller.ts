@@ -11,11 +11,14 @@ import {
 import { MajorsService } from './majors.service';
 import { CreateMajorDto } from './dto/create-major.dto';
 import { UpdateMajorDto } from './dto/update-major.dto';
+import { SudoJwtAuthGuard } from 'src/auth/jwt/jwt.guard';
+import { UseGuards } from '@nestjs/common';
 
 @Controller('majors')
 export class MajorsController {
   constructor(private readonly majorsService: MajorsService) {}
 
+  @UseGuards(SudoJwtAuthGuard)
   @Post()
   create(@Body() createMajorDto: CreateMajorDto) {
     return this.majorsService.create(createMajorDto);
@@ -31,6 +34,7 @@ export class MajorsController {
     return this.majorsService.findOne(majorName);
   }
 
+  @UseGuards(SudoJwtAuthGuard)
   @Patch(':majorName')
   update(
     @Param('majorName') majorName: string,
@@ -39,6 +43,7 @@ export class MajorsController {
     return this.majorsService.update(majorName, updateMajorDto);
   }
 
+  @UseGuards(SudoJwtAuthGuard)
   @Delete(':majorName')
   remove(@Param('majorName') majorName: string) {
     return this.majorsService.remove(majorName);

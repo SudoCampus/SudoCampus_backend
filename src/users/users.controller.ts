@@ -14,7 +14,6 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard, SudoJwtAuthGuard } from '../auth/jwt/jwt.guard';
-import { Request } from '@nestjs/common';
 
 @Controller('users')
 export class UsersController {
@@ -40,16 +39,15 @@ export class UsersController {
   @UseGuards(JwtAuthGuard)
   @Patch(':studentNumber')
   update(
-    @Req() req: Request,
     @Param('studentNumber') studentNumber: number,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.usersService.update(studentNumber, updateUserDto, req);
+    return this.usersService.update(studentNumber, updateUserDto);
   }
 
   @UseGuards(JwtAuthGuard)
   @Delete(':studentNumber')
-  remove(@Req() req: Request, @Param('studentNumber') studentNumber: number) {
-    return this.usersService.remove(studentNumber, req);
+  remove(@Param('studentNumber') studentNumber: number) {
+    return this.usersService.remove(studentNumber);
   }
 }

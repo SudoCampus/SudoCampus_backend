@@ -3,12 +3,14 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Query,
   Param,
+  Patch,
   Delete,
 } from '@nestjs/common';
 import { ApplySecondMajorsService } from './apply-second-majors.service';
 import { CreateApplySecondMajorDto } from './dto/create-apply-second-major.dto';
+import { UpdateApplySecondMajorDto } from './dto/update-apply-second-ajor.dto';
 
 @Controller('apply-second-majors')
 export class ApplySecondMajorsController {
@@ -22,17 +24,60 @@ export class ApplySecondMajorsController {
   }
 
   @Get()
-  findAll() {
-    return this.applySecondMajorsService.findAll();
+  findAll(
+    @Query('studentNumber') studentNumber: number,
+    @Query('majorFrom') majorFrom: string,
+    @Query('majorTo') majorTo: string,
+    @Query('applyPeriod') applyPeriod: string,
+    @Query('isApproved') isApproved: string,
+  ) {
+    return this.applySecondMajorsService.findAll(
+      studentNumber,
+      majorFrom,
+      majorTo,
+      applyPeriod,
+      isApproved,
+    );
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.applySecondMajorsService.findOne(+id);
+  @Get(':studentNumber/:majorName/:applyPeriod')
+  findOne(
+    @Param('studentNumber') studentNumber: number,
+    @Param('majorName') majorName: string,
+    @Param('applyPeriod') applyPeriod: string,
+  ) {
+    return this.applySecondMajorsService.findOne(
+      studentNumber,
+      majorName,
+      applyPeriod,
+    );
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.applySecondMajorsService.remove(+id);
+  @Patch(':studentNumber/:majorName/:applyPeriod')
+  update(
+    @Param('studentNumber') studentNumber: number,
+    @Param('majorName') majorName: string,
+    @Param('applyPeriod') applyPeriod: string,
+    @Body() updateApplySecondMajorDto: UpdateApplySecondMajorDto,
+  ) {
+    return this.applySecondMajorsService.update(
+      studentNumber,
+      majorName,
+      applyPeriod,
+      updateApplySecondMajorDto,
+    );
+  }
+
+  @Delete(':studentNumber/:majorName/:applyPeriod')
+  remove(
+    @Param('studentNumber') studentNumber: number,
+    @Param('majorName') majorName: string,
+    @Param('applyPeriod') applyPeriod: string,
+  ) {
+    return this.applySecondMajorsService.remove(
+      studentNumber,
+      majorName,
+      applyPeriod,
+    );
   }
 }

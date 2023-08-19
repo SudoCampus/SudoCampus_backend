@@ -6,14 +6,14 @@ import { CreateApplySecondMajorDto } from './dto/create-apply-second-major.dto';
 import {
   CommonExceptionHandler,
   CreateExceptionHandler,
-  ReadExceptionHandler,
 } from 'src/utils/exceptionHandler';
 import {
   GetAllApplySecondMajors,
   GetApplySecondMajor,
 } from 'src/queries/apply-second-major';
-import { ApplySecondMajorResponseType } from './dto/read-apply-second-major';
+import { ApplySecondMajorResponseType } from './dto/read-apply-second-major.dto';
 import SuccessHanlder from 'src/utils/SuccessHandler';
+import { UpdateApplySecondMajorDto } from './dto/update-apply-second-ajor.dto';
 
 @Injectable()
 export class ApplySecondMajorsService {
@@ -54,14 +54,18 @@ export class ApplySecondMajorsService {
   }
 
   async findAll(
-    majorName?: string,
-    applyPeriod?: string,
     studentNumber?: number,
+    majorFrom?: string,
+    majorTo?: string,
+    applyPeriod?: string,
+    isApproved?: string,
   ) {
     const applySecondMajors = await this.getApplySecondMajors(
       studentNumber,
-      majorName,
+      majorFrom,
+      majorTo,
       applyPeriod,
+      isApproved,
     );
     return SuccessHanlder.getReadAllSuccessResponse<ApplySecondMajorResponseType>(
       applySecondMajors,
@@ -69,7 +73,7 @@ export class ApplySecondMajorsService {
     );
   }
 
-  async findOne(majorName: string, applyPeriod: string, studentNumber: number) {
+  async findOne(studentNumber: number, majorName: string, applyPeriod: string) {
     const applySecondMajor = await this.getApplySecondMajor(
       studentNumber,
       majorName,
@@ -86,8 +90,52 @@ export class ApplySecondMajorsService {
     );
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} applySecondMajor`;
+  async update(
+    studentNumber: number,
+    majorName: string,
+    applyPeriod: string,
+    updateApplySecondMajorDto: UpdateApplySecondMajorDto,
+  ) {
+    const applySecondMajor = await this.getRawApplySecondMajor(
+      studentNumber,
+      majorName,
+      applyPeriod,
+    );
+    if (!applySecondMajor) {
+      CommonExceptionHandler.throwNotFoundException(
+        '해당 복수전공 신청이 존재하지 않습니다.',
+      );
+    }
+    const result = await this.applySecondMajorRepository.update(
+      { studentNumber, majorName, applyPeriod },
+      updateApplySecondMajorDto,
+    );
+    return SuccessHanlder.getUpdateSuccessResponse(
+      result.affected,
+      this.SECOND_MAJOR,
+    );
+  }
+
+  async remove(studentNumber: number, majorName: string, applyPeriod: string) {
+    const applySecondMajor = await this.getRawApplySecondMajor(
+      studentNumber,
+      majorName,
+      applyPeriod,
+    );
+    if (!applySecondMajor) {
+      CommonExceptionHandler.throwNotFoundException(
+        '해당 복수전공 신청이 존재하지 않습니다.',
+      );
+    }
+    const result = await this.applySecondMajorRepository.delete({
+      studentNumber,
+      majorName,
+      applyPeriod,
+    });
+    return SuccessHanlder.getDeleteSuccessResponse(
+      result.affected,
+      this.SECOND_MAJOR,
+    );
   }
 
   async getRawApplySecondMajor(
@@ -115,14 +163,18 @@ export class ApplySecondMajorsService {
 
   async getApplySecondMajors(
     studentNumber?: number,
-    majorName?: string,
+    majorFrom?: string,
+    majorTo?: string,
     applyPeriod?: string,
+    isApproved?: string,
   ): Promise<ApplySecondMajorResponseType[]> {
     return await new GetAllApplySecondMajors(
       this.applySecondMajorRepository,
       studentNumber,
-      majorName,
+      majorFrom,
+      majorTo,
       applyPeriod,
+      isApproved,
     ).excuteQuery();
   }
 }

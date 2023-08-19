@@ -1,4 +1,4 @@
-import { ApplySecondMajorResponseType } from 'src/apply-second-majors/dto/read-apply-second-major';
+import { ApplySecondMajorResponseType } from 'src/apply-second-majors/dto/read-apply-second-major.dto';
 import BaseQuery from './base';
 import { Repository } from 'typeorm';
 import { ApplySecondMajor } from 'src/apply-second-majors/entities/apply-second-major.entity';
@@ -9,8 +9,10 @@ export class GetAllApplySecondMajors extends BaseQuery<
   constructor(
     private repository: Repository<ApplySecondMajor>,
     private studentNumber?: number,
-    private majorName?: string,
+    private majorFrom?: string,
+    private majorTo?: string,
     private applyPeriod?: string,
+    private isApproved?: string,
   ) {
     super();
   }
@@ -23,6 +25,7 @@ export class GetAllApplySecondMajors extends BaseQuery<
         a.APPLY_PERIOD applyPeriod,
         b.USER_GPA_ALL userGpaAll,
         b.USER_GPA_GROUP userGpaGroup,
+        a.IS_APPROVED isApproved,
         a.INSERT_DAY insertDay,
         a.MODIFY_DAY modifyDay
       FROM apply_second_major a
@@ -47,11 +50,18 @@ export class GetAllApplySecondMajors extends BaseQuery<
     if (this.studentNumber) {
       conditions.push(`a.STUDENT_NUMBER = ${this.studentNumber}`);
     }
-    if (this.majorName) {
-      conditions.push(`a.MAJOR_NAME = '${this.majorName}'`);
+    if (this.majorFrom) {
+      conditions.push(`b.MAJOR_NAME = '${this.majorFrom}'`);
+    }
+    if (this.majorTo) {
+      conditions.push(`a.MAJOR_NAME = '${this.majorTo}'`);
     }
     if (this.applyPeriod) {
       conditions.push(`a.APPLY_PERIOD = '${this.applyPeriod}'`);
+    }
+
+    if (this.isApproved) {
+      conditions.push(`a.IS_APPROVED = '${this.isApproved}'`);
     }
 
     if (conditions.length > 0) {
@@ -79,6 +89,7 @@ export class GetApplySecondMajor extends BaseQuery<ApplySecondMajorResponseType 
             a.APPLY_PERIOD applyPeriod,
             b.USER_GPA_ALL userGpaAll,
             b.USER_GPA_GROUP userGpaGroup,
+            a.IS_APPROVED isApproved,
             a.INSERT_DAY insertDay,
             a.MODIFY_DAY modifyDay
         FROM apply_second_major a

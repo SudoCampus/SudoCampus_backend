@@ -5,6 +5,7 @@ import { CreateMajorDto } from './dto/create-major.dto';
 import { UpdateMajorDto } from './dto/update-major.dto';
 import { Major } from './entities/major.entity';
 import {
+  CommonExceptionHandler,
   ReadExceptionHandler,
   CreateExceptionHandler,
   UpdateExceptionHandler,
@@ -51,7 +52,7 @@ export class MajorsService {
           createMajorDto.departmentName,
         );
       } else {
-        throw error;
+        CommonExceptionHandler.throwBadRequestException(error.message);
       }
     }
   }
@@ -97,7 +98,7 @@ export class MajorsService {
           updateMajorDto.departmentName,
         );
       } else {
-        throw error;
+        CommonExceptionHandler.throwBadRequestException(error.message);
       }
     }
   }

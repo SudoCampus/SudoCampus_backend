@@ -3,6 +3,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { MajorsModule } from '../majors/majors.module';
 import { DepartmentsModule } from 'src/departments/departments.module';
+import { UsersModule } from 'src/users/users.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -21,6 +23,8 @@ import { DepartmentsModule } from 'src/departments/departments.module';
     }),
     MajorsModule,
     DepartmentsModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [],
   providers: [],

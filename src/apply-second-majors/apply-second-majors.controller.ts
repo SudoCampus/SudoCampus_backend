@@ -3,7 +3,7 @@ import {
   Get,
   Post,
   Body,
-  Patch,
+  Query,
   Param,
   Delete,
 } from '@nestjs/common';
@@ -22,13 +22,21 @@ export class ApplySecondMajorsController {
   }
 
   @Get()
-  findAll() {
-    return this.applySecondMajorsService.findAll();
+  findAll(
+    @Query('studentNumber') studentNumber: number,
+    @Query('majorName') majorName: string,
+    @Query('applyPeriod') applyPeriod: string,
+  ) {
+    return this.applySecondMajorsService.findAll(
+      majorName,
+      applyPeriod,
+      studentNumber,
+    );
   }
 
-  @Get(':id')
+  @Get()
   findOne(@Param('id') id: string) {
-    return this.applySecondMajorsService.findOne(+id);
+    return null;
   }
 
   @Delete(':id')

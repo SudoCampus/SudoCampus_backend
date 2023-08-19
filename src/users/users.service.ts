@@ -24,7 +24,6 @@ import {
   GetUserByStudentNumber,
 } from 'src/queries/user';
 import { Payload } from 'src/auth/jwt/jwt.payload';
-import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 @Injectable()
 export class UsersService {
@@ -74,7 +73,7 @@ export class UsersService {
           createUserDto.majorName,
         );
       } else {
-        throw error;
+        CommonExceptionHandler.throwBadRequestException(error.message);
       }
     }
   }
@@ -146,7 +145,7 @@ export class UsersService {
           updateUserDto.majorName,
         );
       } else {
-        throw error;
+        CommonExceptionHandler.throwBadRequestException(error.message);
       }
     }
   }

@@ -1,5 +1,6 @@
 import {
   Controller,
+  Req,
   Get,
   Post,
   Body,
@@ -12,7 +13,8 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { SudoJwtAuthGuard } from '../auth/jwt/jwt.guard';
+import { JwtAuthGuard, SudoJwtAuthGuard } from '../auth/jwt/jwt.guard';
+import { Request } from '@nestjs/common';
 
 @Controller('users')
 export class UsersController {
@@ -30,18 +32,24 @@ export class UsersController {
   }
 
   @UseGuards(SudoJwtAuthGuard)
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
+  @Get(':studentNumber')
+  findOne(@Param('studentNumber') id: number) {
+    return this.usersService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
+  @UseGuards(JwtAuthGuard)
+  @Patch(':studentNumber')
+  update(
+    @Req() req: Request,
+    @Param('studentNumber') studentNumber: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.usersService.update(studentNumber, updateUserDto, req);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  @UseGuards(JwtAuthGuard)
+  @Delete(':studentNumber')
+  remove(@Req() req: Request, @Param('studentNumber') studentNumber: number) {
+    return this.usersService.remove(studentNumber, req);
   }
 }

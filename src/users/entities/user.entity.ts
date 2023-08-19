@@ -30,10 +30,10 @@ export class User {
   @Column({ name: 'USER_SEMESTER' })
   userSemester: number;
 
-  @Column({ name: 'USER_GPA_ALL' })
+  @Column({ name: 'USER_GPA_ALL', type: 'float' })
   userGpaAll: number;
 
-  @Column({ name: 'USER_GPA_GROUP' })
+  @Column({ name: 'USER_GPA_GROUP', type: 'float' })
   userGpaGroup: number;
 
   @CreateDateColumn({ name: 'INSERT_DAY' })

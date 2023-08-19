@@ -1,4 +1,4 @@
-export class ReadUserBasicInfoDto {
+export type UserResponseType = {
   studentNumber: number;
   userId: string;
   userName: string;
@@ -7,4 +7,4 @@ export class ReadUserBasicInfoDto {
   userGpaGroup?: number;
   majorName: string;
   departmentName?: string;
-}
+};

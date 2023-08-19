@@ -1,19 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ReadUserBasicInfoDto } from './dto/read-user.dto';
-import { plainToInstance } from 'class-transformer';
 import { User } from './entities/user.entity';
-import { Major } from 'src/majors/entities/major.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateExceptionHandler } from 'src/utils/exceptionHandler';
+import {
+  CreateExceptionHandler,
+  ReadExceptionHandler,
+  DeleteExceptionHandler,
+  CommonExceptionHandler,
+  UpdateExceptionHandler,
+} from 'src/utils/exceptionHandler';
 import { BcryptHanlder } from 'src/utils/BcryptHandler';
-import SuccessHanlder from 'src/utils/SuccessHandler';
+import SuccessHanlder, { ReadOneResponse } from 'src/utils/SuccessHandler';
 import {
   CreateResponse,
   ReadAllWithPaginationResponse,
 } from 'src/utils/SuccessHandler';
+import { UserResponseType } from './dto/read-user.dto';
+import {
+  GetAllUsers,
+  GetUserById,
+  GetUserByStudentNumber,
+} from 'src/queries/user';
+import { Payload } from 'src/auth/jwt/jwt.payload';
+import { ExceptionsHandler } from '@nestjs/core/exceptions/exceptions-handler';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +39,9 @@ export class UsersService {
   private USER: string = '유저';
   private INVALID_FOREIGN_KEY_CODE: number = 1452;
 
-  async create(createUserDto: CreateUserDto): Promise<CreateResponse<User>> {
+  async create(
+    createUserDto: CreateUserDto,
+  ): Promise<CreateResponse<UserResponseType>> {
     const userByUserId = await this.findByUserId(createUserDto.userId);
     if (userByUserId) {
       CreateExceptionHandler.throwDuplicatedPrimaryKeyException(
@@ -49,7 +62,10 @@ export class UsersService {
       createUserDto.userPw = await BcryptHanlder.hashPassword(
         createUserDto.userPw,
       );
-      const user: User = await this.userRepository.save(createUserDto);
+      await this.userRepository.save(createUserDto);
+      const user: UserResponseType = await this.findByStudentNumber(
+        createUserDto.studentNumber,
+      );
       return SuccessHanlder.getCreateSuccessResponse(user, this.USER);
     } catch (error) {
       if (error.errno === this.INVALID_FOREIGN_KEY_CODE) {
@@ -66,63 +82,107 @@ export class UsersService {
   async findAll(
     page: number,
     per_page: number,
-  ): Promise<ReadAllWithPaginationResponse<ReadUserBasicInfoDto>> {
-    const [users, total] = await this.userRepository
-      .createQueryBuilder('user')
-      .leftJoinAndSelect('user.major', 'major')
-      .select([
-        'user.studentNumber',
-        'user.userId',
-        'user.userName',
-        'user.userSemester',
-        'user.userGpaAll',
-        'user.userGpaGroup',
-        'user.majorName',
-        'major.departmentName',
-      ])
-      .skip((page - 1) * per_page)
-      .take(per_page)
-      .getManyAndCount();
+  ): Promise<ReadAllWithPaginationResponse<UserResponseType>> {
+    const users: UserResponseType[] = await new GetAllUsers(
+      this.userRepository,
+      page,
+      per_page,
+    ).excuteQuery();
 
-    const readUserDtos: ReadUserBasicInfoDto[] = users.map((user) => ({
-      studentNumber: user.studentNumber,
-      userId: user.userId,
-      userName: user.userName,
-      userSemester: user.userSemester,
-      userGpaAll: user.userGpaAll,
-      userGpaGroup: user.userGpaGroup,
-      majorName: user.majorName,
-      departmentName: user.major.departmentName,
-    }));
-
-    const totalPages = Math.ceil(total / per_page);
+    const totalCount = await this.userRepository.count();
+    const total_page = Math.ceil(totalCount / per_page);
 
     return SuccessHanlder.getReadAllWithPaginationSuccessResponse(
-      readUserDtos,
+      users,
       this.USER,
       page,
       per_page,
-      totalPages,
+      total_page,
     );
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(
+    studentNumber: number,
+  ): Promise<ReadOneResponse<UserResponseType>> {
+    const user: UserResponseType = await this.findByStudentNumber(
+      studentNumber,
+    );
+    if (!user) {
+      ReadExceptionHandler.throwNotFoundException(
+        this.STUDENT_NUMBER,
+        studentNumber.toString(),
+      );
+    }
+    return SuccessHanlder.getReadOneSuccessResponse(user, this.USER);
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(studentNumber: number, updateUserDto: UpdateUserDto, req: any) {
+    const payload: Payload = req.user as Payload;
+    if (payload.studentNumber != studentNumber.toString()) {
+      CommonExceptionHandler.throwForbiddenException(
+        '로그인한 유저와 다른 유저를 삭제할 수 없습니다.',
+      );
+    }
+    const isUserExist = await this.findByStudentNumber(studentNumber);
+    if (!isUserExist) {
+      UpdateExceptionHandler.throwNotFoundException(
+        this.STUDENT_NUMBER,
+        studentNumber.toString(),
+      );
+    }
+    try {
+      const result = await this.userRepository.update(
+        { studentNumber },
+        updateUserDto,
+      );
+      return SuccessHanlder.getUpdateSuccessResponse(
+        result.affected,
+        this.USER,
+      );
+    } catch (error) {
+      if (error.errno === this.INVALID_FOREIGN_KEY_CODE) {
+        UpdateExceptionHandler.throwInvalidForeignKeyException(
+          this.MAJOR,
+          updateUserDto.majorName,
+        );
+      } else {
+        throw error;
+      }
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(studentNumber: number, req: any) {
+    const payload: Payload = req.user as Payload;
+    if (payload.studentNumber != studentNumber.toString()) {
+      CommonExceptionHandler.throwForbiddenException(
+        '로그인한 유저와 다른 유저를 삭제할 수 없습니다.',
+      );
+    }
+    const isUserExist = await this.findByStudentNumber(studentNumber);
+    if (!isUserExist) {
+      DeleteExceptionHandler.throwNotFoundException(
+        this.STUDENT_NUMBER,
+        studentNumber.toString(),
+      );
+    }
+    const result = await this.userRepository.delete({ studentNumber });
+    return SuccessHanlder.getDeleteSuccessResponse(result.affected, this.USER);
   }
 
-  async findByUserId(userId: string): Promise<User> {
+  async findByUserId(userId: string): Promise<UserResponseType | null> {
+    return await new GetUserById(userId, this.userRepository).excuteQuery();
+  }
+
+  async findByStudentNumber(
+    studentNumber: number,
+  ): Promise<UserResponseType | null> {
+    return await new GetUserByStudentNumber(
+      studentNumber,
+      this.userRepository,
+    ).excuteQuery();
+  }
+
+  async findRawUser(userId: string): Promise<User> {
     return await this.userRepository.findOne({ where: { userId } });
-  }
-
-  async findByStudentNumber(studentNumber: number): Promise<User> {
-    return await this.userRepository.findOne({ where: { studentNumber } });
   }
 }

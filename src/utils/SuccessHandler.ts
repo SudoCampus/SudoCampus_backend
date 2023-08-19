@@ -1,3 +1,4 @@
+import { UserResponseType } from 'src/users/dto/read-user.dto';
 import { User } from '../users/entities/user.entity';
 
 export default class SuccessHanlder {
@@ -75,7 +76,7 @@ export default class SuccessHanlder {
 
   public static getLoginSuccessResponse(
     userId: string,
-    user: User,
+    user: UserResponseType,
     accessToken: string,
   ): LoginResponse {
     return {
@@ -96,7 +97,7 @@ export default class SuccessHanlder {
 
   public static getVerifySuccessResponse(
     userId: string,
-    user: User,
+    user: UserResponseType,
   ): VerifyResponse {
     return {
       message: `${userId}님, 인증에 성공하였습니다.`,
@@ -148,7 +149,7 @@ export type DeleteResponse<T> = {
 export type LoginResponse = {
   message: string;
   status: 'success';
-  data: User;
+  data: UserResponseType;
   accessToken: string;
 };
 
@@ -161,5 +162,5 @@ export type LogoutResponse = {
 export type VerifyResponse = {
   message: string;
   status: 'success';
-  data: User;
+  data: UserResponseType;
 };

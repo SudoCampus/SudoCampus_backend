@@ -16,6 +16,7 @@ import {
 } from 'src/utils/SuccessHandler';
 import SuccessHanlder from 'src/utils/SuccessHandler';
 import { LoginDto } from './dto/login.dto';
+import { UserResponseType } from 'src/users/dto/read-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -28,20 +29,20 @@ export class AuthService {
 
   async login(loginDto: LoginDto, res: Response): Promise<LoginResponse> {
     const { userId, userPw } = loginDto;
-    const user: User = await this.usersService.findByUserId(userId);
-    if (!user) {
+    const rawUser: User = await this.usersService.findRawUser(userId);
+    if (!rawUser) {
       ReadExceptionHandler.throwNotFoundException(this.ID, userId);
     }
     const isMatched: boolean = await BcryptHanlder.comparePassword(
       userPw,
-      user.userPw,
+      rawUser.userPw,
     );
     if (!isMatched) {
       CommonExceptionHandler.throwLoginFailException();
     }
     const payload: Payload = {
       userId,
-      studentNumber: user.studentNumber.toString(),
+      studentNumber: rawUser.studentNumber.toString(),
     };
     const token: string = this.jwtService.sign(payload);
     res.cookie('token', token, {
@@ -50,6 +51,9 @@ export class AuthService {
       sameSite: 'lax',
       maxAge: 1000 * 60 * 60 * 24, // 1 day
     });
+    const user: UserResponseType = await this.usersService.findByStudentNumber(
+      rawUser.studentNumber,
+    );
     return SuccessHanlder.getLoginSuccessResponse(userId, user, token);
   }
 
@@ -60,7 +64,9 @@ export class AuthService {
 
   async verify(req: Request): Promise<VerifyResponse> {
     const payload: Payload = req.user as Payload;
-    const user: User = await this.usersService.findByUserId(payload.userId);
+    const user: UserResponseType = await this.usersService.findByUserId(
+      payload.userId,
+    );
     return SuccessHanlder.getVerifySuccessResponse(user.userId, user);
   }
 }

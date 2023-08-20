@@ -6,6 +6,7 @@ import { DepartmentsModule } from 'src/departments/departments.module';
 import { UsersModule } from 'src/users/users.module';
 import { AuthModule } from '../auth/auth.module';
 import { ApplySecondMajorsModule } from 'src/apply-second-majors/apply-second-majors.module';
+import { ApplyPeriodsModule } from 'src/apply-periods/apply-periods.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ApplySecondMajorsModule } from 'src/apply-second-majors/apply-second-ma
     UsersModule,
     AuthModule,
     ApplySecondMajorsModule,
+    ApplyPeriodsModule,
   ],
   controllers: [],
   providers: [],

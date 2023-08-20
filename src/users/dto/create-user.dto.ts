@@ -1,4 +1,4 @@
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsNumber, IsOptional, Matches } from 'class-validator';
 import { IsInGpaRange, IsValidStudentNumberLength } from 'src/utils/validators';
 
 export class CreateUserDto {
@@ -11,6 +11,11 @@ export class CreateUserDto {
   userPw: string;
   @IsString()
   userName: string;
+  @IsString()
+  @Matches(/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}$/, {
+    message: '이메일 형식이 올바르지 않습니다.',
+  })
+  userEmail: string;
   @IsString()
   majorName: string;
   @IsNumber()

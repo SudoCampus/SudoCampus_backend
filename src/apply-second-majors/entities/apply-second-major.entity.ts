@@ -17,6 +17,9 @@ export class ApplySecondMajor {
   @PrimaryColumn({ name: 'APPLY_PERIOD' })
   applyPeriod: string;
 
+  @Column({ name: 'USER_GPA_ALL', type: 'float' })
+  userGpaAll: number;
+
   @Column({ name: 'IS_APPROVED' })
   isApproved: string;
 

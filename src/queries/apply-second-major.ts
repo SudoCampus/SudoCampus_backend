@@ -19,12 +19,11 @@ export class GetAllApplySecondMajors extends BaseQuery<
 
   sqlText = `
       SELECT 
-        a.MAJOR_NAME majorTo,
         b.MAJOR_NAME majorFrom,
+        a.MAJOR_NAME majorTo,
         a.APPLY_PERIOD applyPeriod,
-        b.USER_GPA_ALL userGpaAll,
-        b.USER_GPA_GROUP userGpaGroup,
         a.IS_APPROVED isApproved,
+        a.USER_GPA_ALL userGpaAll,
         a.INSERT_DAY insertDay,
         a.MODIFY_DAY modifyDay
       FROM apply_second_major a
@@ -67,6 +66,8 @@ export class GetAllApplySecondMajors extends BaseQuery<
       sqlText += ' WHERE ' + conditions.join(' AND ');
     }
 
+    sqlText += ' ORDER BY a.USER_GPA_ALL DESC';
+
     return sqlText;
   }
 }
@@ -82,14 +83,13 @@ export class GetApplySecondMajor extends BaseQuery<ApplySecondMajorResponseType 
   }
   sqlText = `
         SELECT 
-            a.MAJOR_NAME majorTo,
-            b.MAJOR_NAME majorFrom,
-            a.APPLY_PERIOD applyPeriod,
-            b.USER_GPA_ALL userGpaAll,
-            b.USER_GPA_GROUP userGpaGroup,
-            a.IS_APPROVED isApproved,
-            a.INSERT_DAY insertDay,
-            a.MODIFY_DAY modifyDay
+          b.MAJOR_NAME majorFrom,
+          a.MAJOR_NAME majorTo,
+          a.APPLY_PERIOD applyPeriod,
+          a.IS_APPROVED isApproved,
+          a.USER_GPA_ALL userGpaAll,
+          a.INSERT_DAY insertDay,
+          a.MODIFY_DAY modifyDay
         FROM apply_second_major a
         LEFT OUTER JOIN user b ON a.STUDENT_NUMBER = b.STUDENT_NUMBER
         WHERE a.STUDENT_NUMBER = ${this.studentNumber}

@@ -11,6 +11,9 @@ async function bootstrap() {
       transform: true, // 요청에서 넘어온 자료들의 형변환을 자동으로 해준다. ex) id: string -> id: number
     }),
   );
+  app.enableCors({
+    origin: 'http://localhost:3000',
+  });
   await app.listen(8000);
 }
 bootstrap();

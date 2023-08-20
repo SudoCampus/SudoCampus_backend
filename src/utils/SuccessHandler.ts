@@ -1,5 +1,5 @@
 import { UserResponseType } from 'src/users/dto/read-user.dto';
-import { User } from '../users/entities/user.entity';
+import { StatisticsType } from './StatisticsHandler';
 
 export default class SuccessHanlder {
   public static getCreateSuccessResponse<T>(
@@ -38,6 +38,19 @@ export default class SuccessHanlder {
       page,
       per_page,
       total_pages,
+    };
+  }
+
+  public static getReadAllWithStatisticsSuccessResponse<T>(
+    entities: T[],
+    entityName: string,
+    statistics: StatisticsType,
+  ): ReadAllWithStatisticsResponse<T> {
+    return {
+      message: `${entityName} 조회에 성공하였습니다.`,
+      data: entities,
+      status: 'success',
+      statistics,
     };
   }
 
@@ -126,6 +139,13 @@ export type ReadAllWithPaginationResponse<T> = {
   page: number;
   per_page: number;
   total_pages: number;
+};
+
+export type ReadAllWithStatisticsResponse<T> = {
+  message: string;
+  status: 'success';
+  data: T[];
+  statistics: StatisticsType;
 };
 
 export type ReadOneResponse<T> = {

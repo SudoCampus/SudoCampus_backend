@@ -3,8 +3,7 @@ export type ApplySecondMajorResponseType = {
   majorTo: string;
   applyPeriod: string;
   isApproved: string;
-  userGpaAll?: number;
-  userGpaGroup?: number;
+  userGpaAll: number;
   insertDay: Date;
   modifyDay: Date;
 };

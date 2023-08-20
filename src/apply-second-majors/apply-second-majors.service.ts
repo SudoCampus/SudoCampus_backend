@@ -14,6 +14,7 @@ import {
 import { ApplySecondMajorResponseType } from './dto/read-apply-second-major.dto';
 import SuccessHanlder from 'src/utils/SuccessHandler';
 import { UpdateApplySecondMajorDto } from './dto/update-apply-second-ajor.dto';
+import { StatisticsHanlder, StatisticsType } from 'src/utils/StatisticsHandler';
 
 @Injectable()
 export class ApplySecondMajorsService {
@@ -60,6 +61,11 @@ export class ApplySecondMajorsService {
     applyPeriod?: string,
     isApproved?: string,
   ) {
+    if (!majorTo) {
+      CommonExceptionHandler.throwBadRequestException(
+        '복수전공 대상 학과를 지정하지 않았습니다.',
+      );
+    }
     const applySecondMajors = await this.getApplySecondMajors(
       studentNumber,
       majorFrom,
@@ -67,9 +73,16 @@ export class ApplySecondMajorsService {
       applyPeriod,
       isApproved,
     );
-    return SuccessHanlder.getReadAllSuccessResponse<ApplySecondMajorResponseType>(
+    const statistics: StatisticsType =
+      StatisticsHanlder.getStatistics<ApplySecondMajorResponseType>(
+        applySecondMajors,
+        'userGpaAll',
+        1,
+      );
+    return SuccessHanlder.getReadAllWithStatisticsSuccessResponse<ApplySecondMajorResponseType>(
       applySecondMajors,
       this.SECOND_MAJOR,
+      statistics,
     );
   }
 

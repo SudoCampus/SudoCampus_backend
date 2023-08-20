@@ -24,6 +24,9 @@ export class User {
   @Column({ name: 'USER_NAME' })
   userName: string;
 
+  @Column({ name: 'USER_EMAIL' })
+  userEmail: string;
+
   @Column({ name: 'MAJOR_NAME' })
   majorName: string;
 

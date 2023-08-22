@@ -22,7 +22,7 @@ import {
   GetAllUsers,
   GetUserById,
   GetUserByStudentNumber,
-} from 'src/queries/user';
+} from 'src/utils/queries/user';
 import { Payload } from 'src/auth/jwt/jwt.payload';
 
 @Injectable()

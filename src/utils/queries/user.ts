@@ -1,7 +1,7 @@
-import { UserResponseType } from '../users/dto/read-user.dto';
+import { UserResponseType } from '../../users/dto/read-user.dto';
 import BaseQuery from './base';
 import { Repository } from 'typeorm';
-import { User } from '../users/entities/user.entity';
+import { User } from '../../users/entities/user.entity';
 
 export class GetAllUsers extends BaseQuery<UserResponseType[]> {
   constructor(

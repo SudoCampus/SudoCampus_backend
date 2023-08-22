@@ -10,7 +10,7 @@ import {
 import {
   GetAllApplySecondMajors,
   GetApplySecondMajor,
-} from 'src/queries/apply-second-major';
+} from 'src/utils/queries/apply-second-major';
 import { ApplySecondMajorResponseType } from './dto/read-apply-second-major.dto';
 import SuccessHanlder from 'src/utils/SuccessHandler';
 import { UpdateApplySecondMajorDto } from './dto/update-apply-second-ajor.dto';

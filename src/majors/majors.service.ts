@@ -19,12 +19,17 @@ import {
   UpdateResponse,
   DeleteResponse,
 } from 'src/utils/SuccessHandler';
+import { Payload } from 'src/auth/jwt/jwt.payload';
+import { UsersService } from 'src/users/users.service';
+import { UserResponseType } from 'src/users/dto/read-user.dto';
+import { APPLIABLE_MAJORS_FOR_FIRST_MAJOR } from './static/appliable-major.static';
 
 @Injectable()
 export class MajorsService {
   constructor(
     @InjectRepository(Major)
     private majorRepository: Repository<Major>,
+    private usersService: UsersService,
   ) {}
 
   private MAJOR: string = '학과';
@@ -119,6 +124,47 @@ export class MajorsService {
         this.MAJOR,
         majorName,
       );
+    }
+  }
+
+  async getAppliableMajors(
+    payload: Payload,
+    type: '원전공' | '복수전공',
+    departmentName: string,
+  ) {
+    const user: UserResponseType = await this.usersService.findByStudentNumber(
+      parseInt(payload.studentNumber),
+    );
+    return SuccessHanlder.getReadAllSuccessResponse<string>(
+      await this.getAppliabeMajorsByDepartmentName(
+        user.departmentName,
+        type,
+        departmentName,
+      ),
+      this.MAJOR,
+    );
+  }
+
+  async getAppliabeMajorsByDepartmentName(
+    userDepartmentName: string,
+    type: '원전공' | '복수전공',
+    filterDepartmentName?: string,
+  ): Promise<string[]> {
+    const usingMajors = filterDepartmentName
+      ? await this.majorRepository.find({
+          where: { departmentName: filterDepartmentName },
+        })
+      : await this.majorRepository.find();
+    switch (type) {
+      case '원전공':
+        return (
+          APPLIABLE_MAJORS_FOR_FIRST_MAJOR[userDepartmentName].filter(
+            (major) =>
+              usingMajors.map((major) => major.majorName).indexOf(major) >= 0,
+          ) || []
+        );
+      case '복수전공':
+        return usingMajors.map((major) => major.majorName);
     }
   }
 

@@ -23,6 +23,7 @@ import { Payload } from 'src/auth/jwt/jwt.payload';
 import { UsersService } from 'src/users/users.service';
 import { UserResponseType } from 'src/users/dto/read-user.dto';
 import { APPLIABLE_MAJORS_FOR_FIRST_MAJOR } from './static/appliable-major.static';
+import { convertArrToDict } from 'src/utils';
 
 @Injectable()
 export class MajorsService {
@@ -155,12 +156,15 @@ export class MajorsService {
           where: { departmentName: filterDepartmentName },
         })
       : await this.majorRepository.find();
+    const usingMajorsHash = convertArrToDict<Major>(
+      usingMajors,
+      (major) => major.majorName,
+    );
     switch (type) {
       case '원전공':
         return (
           APPLIABLE_MAJORS_FOR_FIRST_MAJOR[userDepartmentName].filter(
-            (major) =>
-              usingMajors.map((major) => major.majorName).indexOf(major) >= 0,
+            (major) => usingMajorsHash.contains,
           ) || []
         );
       case '복수전공':
